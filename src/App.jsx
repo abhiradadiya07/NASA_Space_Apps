@@ -1,12 +1,11 @@
 import { Button } from "./components/ui/button"
+import MapView from "./pages/MapView"
 
 function App() {
 
   return (
     <>
-      <div>
-      Hello world
-      <Button>Hello</Button>
+      <div><MapView />
       </div>
     </>
   )
