@@ -6,6 +6,9 @@ import HeroSection from "@/components/common/HeroSection";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SelectOptions } from "@/components/common/SelectOptions";
+import { DatePickerWithRange } from "@/components/common/RangePicker";
+import { SelectNotifications } from "@/components/common/SelectNotification";
 
 // Fix for default marker icon in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -132,36 +135,24 @@ export default function MapView() {
               <Label className="ml-1">
                 Cloud Coverage Threshold (%)
               </Label>
-              <Input
-                type="text"
-                value={location.cloud}
-                className="mt-2"
-              />
+              <SelectOptions />
             </div>
 
             <div>
               <Label className="ml-1">
                 Date Range
               </Label>
-              <Input
-                type="text"
-                value={location.date}
-                className="mt-2"
-              />
+              <DatePickerWithRange />
             </div>
             <div>
               <Label className="ml-1">
-                Notification Lead Time (minutes)
+                Notification Lead Time (hours)
               </Label>
-              <Input
-                type="text"
-                value={location.notificationTime}
-                className="mt-2"
-              />
+              <SelectNotifications />
             </div>
             <div>
               <Label className="ml-1">
-                Notification Method
+                Enter your email for notification
               </Label>
               <Input
                 type="text"
