@@ -5,7 +5,7 @@ const HeroSection = () => {
     <section className="relative w-full h-screen flex justify-center items-center overflow-hidden">
       <video 
         className="absolute top-0 left-0 w-full h-full object-cover"
-        src="/public/Videos/856857-uhd_4096_2160_30fps.mp4" 
+        src="/Videos/856857-uhd_4096_2160_30fps.mp4" 
         autoPlay 
         loop 
         muted 

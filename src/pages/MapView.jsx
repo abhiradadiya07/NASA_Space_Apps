@@ -52,7 +52,6 @@ function LocationMarker({ onLocationSelect }) {
       }
     },
   });
-
   return position ? <Marker position={position} /> : null;
 }
 
@@ -67,10 +66,57 @@ export default function MapView() {
     notificationMethod: "",
   });
 
+  const [notificationTime, setNotificationTime] = useState("");
+  const [notificationMethod, setNotificationMethod] = useState("");
+  const [dataVisible, setDataVisible] = useState(false); // State to manage data visibility
+
+  const downloadCSV = (data, notificationTime, notificationMethod) => {
+    const csvData = [
+      ["Path", "Row", "Lat", "Long", "L8 Next Acq", "L9 Next Acq"],
+      ...data.map((item) => [
+        item.Path,
+        item.Row,
+        item.Lat,
+        item.Long,
+        item.L8_Next_Acq,
+        item.L9_Next_Acq,
+      ]),
+      [],
+      ["User Email", notificationMethod],
+      ["Notification Lead Time", notificationTime],
+    ];
+
+    const csvString = csvData
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "landsat_data.csv";
+    document.body.appendChild(a);
+    a.click();
+
+    // Clean up after download
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   const data = [
     { Path: 1, Row: 22, Lat: 34.5, Long: -112.3, L8_Next_Acq: "2024-10-15", L9_Next_Acq: "2024-11-01" },
     { Path: 2, Row: 25, Lat: 38.1, Long: -120.8, L8_Next_Acq: "2024-10-16", L9_Next_Acq: "2024-11-02" },
   ];
+
+  const handleSearch = () => {
+    // Set the state to make the data and download button visible
+    setDataVisible(true);
+  };
+
+  const handleDownload = () => {
+    downloadCSV(data, notificationTime, notificationMethod);
+  };
+
   return (
     <div className="bg-black">
       <HeroSection />
@@ -96,9 +142,7 @@ export default function MapView() {
 
           <div className="space-y-4 text-white font-medium">
             <div>
-              <Label className="ml-1">
-                Latitude
-              </Label>
+              <Label className="ml-1">Latitude</Label>
               <Input
                 type="text"
                 value={location.latitude}
@@ -108,9 +152,7 @@ export default function MapView() {
             </div>
 
             <div>
-              <Label className="ml-1">
-                Longitude
-              </Label>
+              <Label className="ml-1">Longitude</Label>
               <Input
                 type="text"
                 value={location.longitude}
@@ -120,9 +162,7 @@ export default function MapView() {
             </div>
 
             <div>
-              <Label className="ml-1">
-                Address
-              </Label>
+              <Label className="ml-1">Address</Label>
               <Input
                 type="text"
                 value={location.address}
@@ -132,78 +172,83 @@ export default function MapView() {
             </div>
 
             <div>
-              <Label className="ml-1">
-                Cloud Coverage Threshold (%)
-              </Label>
+              <Label className="ml-1">Cloud Coverage Threshold (%)</Label>
               <SelectOptions />
             </div>
 
             <div>
-              <Label className="ml-1">
-                Date Range
-              </Label>
+              <Label className="ml-1">Date Range</Label>
               <DatePickerWithRange />
             </div>
+
             <div>
-              <Label className="ml-1">
-                Notification Lead Time (hours)
-              </Label>
-              <SelectNotifications />
+              <Label className="ml-1">Notification Lead Time (hours)</Label>
+              <SelectNotifications onChange={setNotificationTime} />
             </div>
+
             <div>
-              <Label className="ml-1">
-                Enter your email for notification
-              </Label>
+              <Label className="ml-1">Enter your email for notification</Label>
               <Input
                 type="text"
-                value={location.notificationMethod}
+                value={notificationMethod}
+                onChange={(e) => setNotificationMethod(e.target.value)}
                 className="mt-2"
               />
             </div>
+
+            {/* Search Button */}
             <div className="flex justify-between">
-              <Button>Search</Button>
-              <Button>Download Data</Button>
+              <Button onClick={handleSearch}>Search</Button>
+
+              {/* Download Button - only enabled after search */}
+              <Button onClick={handleDownload} disabled={!dataVisible}>
+                Download Data
+              </Button>
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-center text-white mt-12">
-            Next Landsat Acquisition
-          </h1>
-          <div className="text-white mt-8">
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead>
-                <tr>
-                  <th style={{ border: '1px solid white', padding: '8px' }}>Path</th>
-                  <th style={{ border: '1px solid white', padding: '8px' }}>Row</th>
-                  <th style={{ border: '1px solid white', padding: '8px' }}>Lat</th>
-                  <th style={{ border: '1px solid white', padding: '8px' }}>Long</th>
-                  <th style={{ border: '1px solid white', padding: '8px' }}>L8 Next Acq</th>
-                  <th style={{ border: '1px solid white', padding: '8px' }}>L9 Next Acq</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', border: '1px solid white', padding: '8px' }}>
-                      No data available
-                    </td>
-                  </tr>
-                ) : (
-                  data.map((item, index) => (
-                    <tr key={index}>
-                      <td style={{ border: '1px solid white', padding: '8px' }}>{item.Path}</td>
-                      <td style={{ border: '1px solid white', padding: '8px' }}>{item.Row}</td>
-                      <td style={{ border: '1px solid white', padding: '8px' }}>{item.Lat}</td>
-                      <td style={{ border: '1px solid white', padding: '8px' }}>{item.Long}</td>
-                      <td style={{ border: '1px solid white', padding: '8px' }}>{item.L8_Next_Acq}</td>
-                      <td style={{ border: '1px solid white', padding: '8px' }}>{item.L9_Next_Acq}</td>
+          {/* Data Table - only visible after search */}
+          {dataVisible && (
+            <>
+              <h1 className="text-2xl font-bold text-center text-white mt-12">
+                Next Landsat Acquisition
+              </h1>
+              <div className="text-white mt-8">
+                <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ border: "1px solid white", padding: "8px" }}>Path</th>
+                      <th style={{ border: "1px solid white", padding: "8px" }}>Row</th>
+                      <th style={{ border: "1px solid white", padding: "8px" }}>Lat</th>
+                      <th style={{ border: "1px solid white", padding: "8px" }}>Long</th>
+                      <th style={{ border: "1px solid white", padding: "8px" }}>L8 Next Acq</th>
+                      <th style={{ border: "1px solid white", padding: "8px" }}>L9 Next Acq</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
+                  </thead>
+                  <tbody>
+                    {data.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: "center", border: "1px solid white", padding: "8px" }}>
+                          No data available
+                        </td>
+                      </tr>
+                    ) : (
+                      data.map((item, index) => (
+                        <tr key={index}>
+                          <td style={{ border: "1px solid white", padding: "8px" }}>{item.Path}</td>
+                          <td style={{ border: "1px solid white", padding: "8px" }}>{item.Row}</td>
+                          <td style={{ border: "1px solid white", padding: "8px" }}>{item.Lat}</td>
+                          <td style={{ border: "1px solid white", padding: "8px" }}>{item.Long}</td>
+                          <td style={{ border: "1px solid white", padding: "8px" }}>{item.L8_Next_Acq}</td>
+                          <td style={{ border: "1px solid white", padding: "8px" }}>{item.L9_Next_Acq}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
